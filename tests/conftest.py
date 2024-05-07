@@ -4,27 +4,6 @@ import supporter
 import datas
 
 @pytest.fixture
-def user():
-    email = supporter.generate_random_login()
-    password = supporter.generate_random_password()
-    name = supporter.generate_random_user_name(5)
-    payload = {
-        'email': email,
-        'password': password,
-        'name': name
-    }
-    response = requests.post(datas.user_register, data=payload)
-    access_token = response.json().get("accessToken")
-    yield {
-        'email': email,
-        'password': password,
-        'name': name,
-        'access_token': access_token
-    }
-    headers = {'Authorization': access_token}
-    requests.delete(datas.user_info, headers=headers)
-
-@pytest.fixture
 def user_creating():
     email = supporter.generate_random_login()
     password = supporter.generate_random_password()
@@ -40,6 +19,24 @@ def user_creating():
         }
     response = requests.post(datas.user_login, data=payload)
     access_token = response.json().get("accessToken")
+    headers = {'Authorization': access_token}
+    requests.delete(datas.user_info, headers=headers)
+
+@pytest.fixture
+def user(user_creating):
+    payload = {
+        'email': user_creating['email'],
+        'password': user_creating['password'],
+        'name': user_creating['name']
+    }
+    response = requests.post(datas.user_register, data=payload)
+    access_token = response.json().get("accessToken")
+    yield {
+        'email': payload['email'],
+        'password': payload['password'],
+        'name': payload['name'],
+        'access_token': access_token
+    }
     headers = {'Authorization': access_token}
     requests.delete(datas.user_info, headers=headers)
 
